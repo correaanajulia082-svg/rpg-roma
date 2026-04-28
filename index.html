@@ -3,166 +3,190 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roma: Ascensão</title>
+<title>Roma: Crise e Poder</title>
 
 <style>
-body {
-  margin:0;
-  font-family: Arial;
-  color:white;
-  text-align:center;
-  background-size:cover;
-  background-position:center;
-  transition: background 1s ease-in-out;
+body { margin:0; font-family:Arial; background:black; color:white; overflow:hidden;}
+#bg { position:fixed; width:100%; height:100%; background-size:cover; background-position:center; transition:1s; }
+#char { position:absolute; bottom:120px; left:50%; transform:translateX(-50%); height:300px; }
+
+.ui {
+  position:absolute; bottom:0; width:100%;
+  background:rgba(0,0,0,0.85);
+  padding:15px; border-top:3px solid gold;
 }
 
-.overlay {
-  background: rgba(0,0,0,0.7);
-  min-height:100vh;
-  padding:20px;
+.nome { color:gold; font-weight:bold; }
+.texto { margin-top:5px; min-height:70px; }
+
+.opcoes button {
+  margin:5px; padding:10px;
+  border:none; border-radius:8px;
+  background:gold; font-weight:bold;
 }
 
-h1 { color: gold; }
-
-.box {
-  border:2px solid gold;
-  padding:20px;
-  border-radius:10px;
-  margin-top:20px;
-  background: rgba(0,0,0,0.6);
-  opacity:0;
-  transform: translateY(20px);
-  animation: fadeIn 0.8s forwards;
+.status {
+  position:absolute; top:10px; left:10px;
 }
 
-button {
-  padding:12px;
-  margin:5px;
-  border-radius:10px;
-  border:none;
-  cursor:pointer;
-  background:gold;
-  font-weight:bold;
-  transition: transform 0.2s;
+.menu {
+  position:absolute; width:100%; height:100%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  background:black;
 }
 
-button:hover {
-  transform: scale(1.05);
-}
-
-.character {
-  width:140px;
-  margin-top:10px;
-  animation: fadeIn 1s;
-}
-
-@keyframes fadeIn {
-  from { opacity:0; transform: translateY(20px); }
-  to { opacity:1; transform: translateY(0); }
-}
-
-.dialogo {
-  font-size:18px;
-  margin-top:10px;
-}
+button { cursor:pointer; }
 </style>
 </head>
 
 <body>
-<div class="overlay">
 
-<h1>🏛️ Roma: Ascensão</h1>
+<div id="bg"></div>
+<img id="char">
 
-<img id="char" class="character" src="https://i.imgur.com/8QfQZ7T.png">
-
-<div class="box">
-  <div id="nome"></div>
-  <div id="historia" class="dialogo">Clique em uma opção para começar</div>
+<div class="status">
+🍞 Recursos: <span id="rec">2</span><br>
+⚖️ Ordem: <span id="ord">2</span>
 </div>
 
-<div id="botoes"></div>
+<!-- MENU -->
+<div id="menu" class="menu">
+  <h1>🏛️ Roma: Crise e Poder</h1>
+  <p>Você é um líder responsável pela sobrevivência de Roma.</p>
+  <button onclick="start()">Começar</button>
+</div>
 
-<p>❤️ Vida: <span id="vida">3</span> | 🤝 Influência: <span id="infl">2</span></p>
-
-<audio id="bgm" loop autoplay>
-  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_6f0c9fbb0f.mp3" type="audio/mp3">
-</audio>
+<!-- JOGO -->
+<div id="game" style="display:none;">
+  <div class="ui">
+    <div id="nome" class="nome"></div>
+    <div id="texto" class="texto"></div>
+    <div id="opcoes"></div>
+  </div>
+</div>
 
 <script>
-let vida=3, infl=2, etapa=0;
+let rec=2;
+let ord=2;
 
-const cenas = [
-  {
-    nome:"Caio Márcio",
-    texto:"Roma está em crise... o povo passa fome e olha para você em busca de solução.",
-    opcoes:["Buscar recursos","Pedir ajuda","Controlar comida"]
-  },
-  {
-    nome:"Conselheiro",
-    texto:"Senhor, a cidade está entrando em conflito! Precisamos agir agora.",
-    opcoes:["Reprimir","Negociar","Ignorar"]
-  },
-  {
-    nome:"Povo",
-    texto:"Decida nosso destino! Quem governará Roma?",
-    opcoes:["Virar líder","Dividir poder","Fugir"]
-  }
-];
+const cenas = {
 
-function atualizar(){
- document.getElementById("vida").innerText=vida;
- document.getElementById("infl").innerText=infl;
- if(vida<=0) fimMorte();
+inicio:{
+ nome:"Narrador",
+ texto:"Roma enfrenta fome. O povo exige soluções imediatas.",
+ bg:"https://images.unsplash.com/photo-rome",
+ img:"https://i.imgur.com/8QfQZ7T.png",
+ op:[
+  {t:"Enviar tropas buscar comida", p:"campo", r:1},
+  {t:"Negociar com cidades vizinhas", p:"alianca", r:0},
+  {t:"Racionar comida", p:"racionamento", o:1}
+ ]
+},
+
+campo:{
+ nome:"General",
+ texto:"Podemos saquear vilas próximas, mas isso pode gerar guerra.",
+ bg:"https://images.unsplash.com/photo-war",
+ img:"https://i.imgur.com/1X6K7Yh.png",
+ op:[
+  {t:"Atacar", p:"resultadoAtaque", r:2, o:-1},
+  {t:"Recuar", p:"inicio", o:1}
+ ]
+},
+
+alianca:{
+ nome:"Emissário",
+ texto:"Algumas cidades aceitam negociar, mas pedem apoio militar.",
+ bg:"https://images.unsplash.com/photo-city",
+ img:"https://i.imgur.com/Z6X7FZg.png",
+ op:[
+  {t:"Aceitar acordo", p:"resultadoAlianca", r:1, o:1},
+  {t:"Recusar", p:"inicio"}
+ ]
+},
+
+racionamento:{
+ nome:"Povo",
+ texto:"O povo está revoltado com a falta de comida.",
+ bg:"https://images.unsplash.com/photo-dark",
+ img:"https://i.imgur.com/Z6X7FZg.png",
+ op:[
+  {t:"Reprimir revolta", p:"resultadoRepressao", o:2},
+  {t:"Ceder ao povo", p:"inicio", o:-1}
+ ]
+},
+
+resultadoAtaque:{
+ nome:"Narrador",
+ texto:"Roma conseguiu comida, mas agora enfrenta inimigos.",
+ final:true
+},
+
+resultadoAlianca:{
+ nome:"Narrador",
+ texto:"Roma cresce com alianças e estabilidade.",
+ final:true
+},
+
+resultadoRepressao:{
+ nome:"Narrador",
+ texto:"A ordem foi mantida, mas o povo teme seu governo.",
+ final:true
 }
 
-function dado(){ return Math.floor(Math.random()*6)+1; }
+};
 
-function escolher(){
- let n=dado();
- let h=document.getElementById("historia");
-
- if(n<=2){ vida--; h.innerHTML="❌ Falha..."; }
- else if(n<=4){ h.innerHTML="⚠️ Parcial..."; }
- else { infl++; h.innerHTML="✅ Sucesso!"; }
-
- atualizar();
-
- setTimeout(()=>{ etapa++; render(); },1200);
+function start(){
+ document.getElementById("menu").style.display="none";
+ document.getElementById("game").style.display="block";
+ load("inicio");
 }
 
-function render(){
- let cena=cenas[etapa];
- if(!cena) return final();
+function efeito(texto, el){
+ el.innerHTML="";
+ let i=0;
+ let t=setInterval(()=>{
+  el.innerHTML+=texto[i];
+  i++;
+  if(i>=texto.length) clearInterval(t);
+ },25);
+}
 
- document.getElementById("nome").innerHTML="<b>"+cena.nome+"</b>";
- document.getElementById("historia").innerHTML=cena.texto;
+function load(id){
+ let c=cenas[id];
+
+ document.getElementById("bg").style.backgroundImage=`url(${c.bg})`;
+ document.getElementById("char").src=c.img;
+ document.getElementById("nome").innerText=c.nome;
+
+ efeito(c.texto, document.getElementById("texto"));
 
  let html="";
- cena.opcoes.forEach(op=>{
-  html+=`<button onclick="escolher()">${op}</button>`;
- });
- document.getElementById("botoes").innerHTML=html;
+
+ if(c.final){
+  html=`<button onclick="location.reload()">🔄 Jogar novamente</button>`;
+ } else {
+  c.op.forEach(o=>{
+   html+=`<button onclick="escolha('${o.p}',${o.r||0},${o.o||0})">${o.t}</button>`;
+  });
+ }
+
+ document.getElementById("opcoes").innerHTML=html;
+ atualizar();
 }
 
-function final(){
- let h=document.getElementById("historia");
- let b=document.getElementById("botoes");
-
- if(infl>=4) h.innerHTML="👑 Roma prospera sob seu comando!";
- else if(vida<=0) h.innerHTML="💀 Você morreu.";
- else h.innerHTML="⚔️ Roma entra em caos.";
-
- b.innerHTML="<button onclick='location.reload()'>Jogar novamente</button>";
+function escolha(prox, r, o){
+ rec+=r;
+ ord+=o;
+ load(prox);
 }
 
-function fimMorte(){
- document.getElementById("historia").innerHTML="💀 Você morreu.";
- document.getElementById("botoes").innerHTML="<button onclick='location.reload()'>Reiniciar</button>";
+function atualizar(){
+ document.getElementById("rec").innerText=rec;
+ document.getElementById("ord").innerText=ord;
 }
-
-render();
 </script>
 
-</div>
 </body>
 </html>
