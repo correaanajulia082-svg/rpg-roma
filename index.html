@@ -8,7 +8,8 @@ roma-ascendente/
 │   ├── combat.py
 │
 └── data/
-    └── events.jsonfrom game.player import Player
+    └── events.json
+    from game.player import Player
 from game.city import City
 from game.events import start_event
 
@@ -35,19 +36,15 @@ def main():
             break
 
 if __name__ == "__main__":
-    main()class Player:
+    main()
+            class Player:
     def __init__(self, nome):
         self.nome = nome
         self.influencia = 10
         self.forca = 5
         self.estrategia = 5
-        self.moral = 5class Player:
-    def __init__(self, nome):
-        self.nome = nome
-        self.influencia = 10
-        self.forca = 5
-        self.estrategia = 5
-        self.moral = 5class City:
+        self.moral = 5
+            class City:
     def __init__(self):
         self.populacao = 50
         self.comida = 100
@@ -58,7 +55,9 @@ if __name__ == "__main__":
 
         if self.comida < 0:
             self.populacao += self.comida  # perda de população
-            self.comida = 0import random
+            self.comida = 0
+
+            import random
 
 def batalha(player):
     inimigo = random.randint(3, 10)
@@ -73,7 +72,9 @@ def batalha(player):
         return True
     else:
         print("💀 Derrota...")
-        return Falseimport random
+        return False
+
+            import random
 from game.combat import batalha
 
 def start_event(player, city):
@@ -133,24 +134,5 @@ def visitante(player, city):
         player.estrategia += 2
         print("📚 Você aprendeu algo novo.")
     else:
-        player.moral -= 1{
-  "eventos": [
-    {
-      "nome": "tribo",
-      "descricao": "Uma tribo aparece"
-    }
-  ]
-}# 🏛️ Roma Ascendente
-
-Um RPG de texto onde você constrói Roma desde uma pequena aldeia.
-
-## 🎮 Features
-- Sistema de escolhas
-- Combate simples
-- Gestão de recursos
-- Eventos aleatórios
-
-## 🚀 Como rodar
-
-```bash
-python main.py
+        player.moral -= 1
+            
