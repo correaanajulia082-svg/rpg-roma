@@ -1,192 +1,156 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roma: Crise e Poder</title>
+roma-ascendente/
+│
+├── main.py
+├── game/
+│   ├── player.py
+│   ├── city.py
+│   ├── events.py
+│   ├── combat.py
+│
+└── data/
+    └── events.jsonfrom game.player import Player
+from game.city import City
+from game.events import start_event
 
-<style>
-body { margin:0; font-family:Arial; background:black; color:white; overflow:hidden;}
-#bg { position:fixed; width:100%; height:100%; background-size:cover; background-position:center; transition:1s; }
-#char { position:absolute; bottom:120px; left:50%; transform:translateX(-50%); height:300px; }
+def main():
+    print("🏛️ ROMA ASCENDENTE 🏛️\n")
 
-.ui {
-  position:absolute; bottom:0; width:100%;
-  background:rgba(0,0,0,0.85);
-  padding:15px; border-top:3px solid gold;
-}
+    nome = input("Nome do líder: ")
+    player = Player(nome)
+    city = City()
 
-.nome { color:gold; font-weight:bold; }
-.texto { margin-top:5px; min-height:70px; }
+    while True:
+        print("\n========================")
+        print(f"Líder: {player.nome}")
+        print(f"População: {city.populacao}")
+        print(f"Comida: {city.comida}")
+        print(f"Ouro: {city.ouro}")
+        print(f"Influência: {player.influencia}")
+        print("========================")
 
-.opcoes button {
-  margin:5px; padding:10px;
-  border:none; border-radius:8px;
-  background:gold; font-weight:bold;
-}
+        start_event(player, city)
 
-.status {
-  position:absolute; top:10px; left:10px;
-}
+        if city.populacao <= 0:
+            print("\n💀 Sua civilização caiu...")
+            break
 
-.menu {
-  position:absolute; width:100%; height:100%;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  background:black;
-}
+if __name__ == "__main__":
+    main()class Player:
+    def __init__(self, nome):
+        self.nome = nome
+        self.influencia = 10
+        self.forca = 5
+        self.estrategia = 5
+        self.moral = 5class Player:
+    def __init__(self, nome):
+        self.nome = nome
+        self.influencia = 10
+        self.forca = 5
+        self.estrategia = 5
+        self.moral = 5class City:
+    def __init__(self):
+        self.populacao = 50
+        self.comida = 100
+        self.ouro = 50
 
-button { cursor:pointer; }
-</style>
-</head>
+    def consumir_comida(self):
+        self.comida -= self.populacao // 2
 
-<body>
+        if self.comida < 0:
+            self.populacao += self.comida  # perda de população
+            self.comida = 0import random
 
-<div id="bg"></div>
-<img id="char">
+def batalha(player):
+    inimigo = random.randint(3, 10)
 
-<div class="status">
-🍞 Recursos: <span id="rec">2</span><br>
-⚖️ Ordem: <span id="ord">2</span>
-</div>
+    poder_player = player.forca + random.randint(1, 6)
+    poder_inimigo = inimigo + random.randint(1, 6)
 
-<!-- MENU -->
-<div id="menu" class="menu">
-  <h1>🏛️ Roma: Crise e Poder</h1>
-  <p>Você é um líder responsável pela sobrevivência de Roma.</p>
-  <button onclick="start()">Começar</button>
-</div>
+    print(f"\n⚔️ Batalha! Seu poder: {poder_player} | Inimigo: {poder_inimigo}")
 
-<!-- JOGO -->
-<div id="game" style="display:none;">
-  <div class="ui">
-    <div id="nome" class="nome"></div>
-    <div id="texto" class="texto"></div>
-    <div id="opcoes"></div>
-  </div>
-</div>
+    if poder_player >= poder_inimigo:
+        print("🏆 Vitória!")
+        return True
+    else:
+        print("💀 Derrota...")
+        return Falseimport random
+from game.combat import batalha
 
-<script>
-let rec=2;
-let ord=2;
+def start_event(player, city):
+    eventos = [
+        encontro_tribo,
+        fome,
+        visitante,
+    ]
 
-const cenas = {
+    evento = random.choice(eventos)
+    evento(player, city)
 
-inicio:{
- nome:"Narrador",
- texto:"Roma enfrenta fome. O povo exige soluções imediatas.",
- bg:"https://images.unsplash.com/photo-rome",
- img:"https://i.imgur.com/8QfQZ7T.png",
- op:[
-  {t:"Enviar tropas buscar comida", p:"campo", r:1},
-  {t:"Negociar com cidades vizinhas", p:"alianca", r:0},
-  {t:"Racionar comida", p:"racionamento", o:1}
- ]
-},
 
-campo:{
- nome:"General",
- texto:"Podemos saquear vilas próximas, mas isso pode gerar guerra.",
- bg:"https://images.unsplash.com/photo-war",
- img:"https://i.imgur.com/1X6K7Yh.png",
- op:[
-  {t:"Atacar", p:"resultadoAtaque", r:2, o:-1},
-  {t:"Recuar", p:"inicio", o:1}
- ]
-},
+def encontro_tribo(player, city):
+    print("\n🏹 Você encontrou uma tribo vizinha.")
 
-alianca:{
- nome:"Emissário",
- texto:"Algumas cidades aceitam negociar, mas pedem apoio militar.",
- bg:"https://images.unsplash.com/photo-city",
- img:"https://i.imgur.com/Z6X7FZg.png",
- op:[
-  {t:"Aceitar acordo", p:"resultadoAlianca", r:1, o:1},
-  {t:"Recusar", p:"inicio"}
- ]
-},
+    print("1. Atacar")
+    print("2. Fazer aliança")
 
-racionamento:{
- nome:"Povo",
- texto:"O povo está revoltado com a falta de comida.",
- bg:"https://images.unsplash.com/photo-dark",
- img:"https://i.imgur.com/Z6X7FZg.png",
- op:[
-  {t:"Reprimir revolta", p:"resultadoRepressao", o:2},
-  {t:"Ceder ao povo", p:"inicio", o:-1}
- ]
-},
+    escolha = input("> ")
 
-resultadoAtaque:{
- nome:"Narrador",
- texto:"Roma conseguiu comida, mas agora enfrenta inimigos.",
- final:true
-},
+    if escolha == "1":
+        if batalha(player):
+            city.ouro += 20
+            city.populacao += 10
+        else:
+            city.populacao -= 10
+    else:
+        print("🤝 Aliança formada!")
+        player.influencia += 5
 
-resultadoAlianca:{
- nome:"Narrador",
- texto:"Roma cresce com alianças e estabilidade.",
- final:true
-},
 
-resultadoRepressao:{
- nome:"Narrador",
- texto:"A ordem foi mantida, mas o povo teme seu governo.",
- final:true
-}
+def fome(player, city):
+    print("\n🌾 Escassez de comida!")
 
-};
+    print("1. Racionar comida")
+    print("2. Ignorar")
 
-function start(){
- document.getElementById("menu").style.display="none";
- document.getElementById("game").style.display="block";
- load("inicio");
-}
+    escolha = input("> ")
 
-function efeito(texto, el){
- el.innerHTML="";
- let i=0;
- let t=setInterval(()=>{
-  el.innerHTML+=texto[i];
-  i++;
-  if(i>=texto.length) clearInterval(t);
- },25);
-}
+    if escolha == "1":
+        city.comida += 10
+        player.influencia -= 2
+    else:
+        city.populacao -= 5
 
-function load(id){
- let c=cenas[id];
 
- document.getElementById("bg").style.backgroundImage=`url(${c.bg})`;
- document.getElementById("char").src=c.img;
- document.getElementById("nome").innerText=c.nome;
+def visitante(player, city):
+    print("\n🧙 Um visitante misterioso chegou.")
 
- efeito(c.texto, document.getElementById("texto"));
+    print("1. Ouvir conselho")
+    print("2. Expulsar")
 
- let html="";
+    escolha = input("> ")
 
- if(c.final){
-  html=`<button onclick="location.reload()">🔄 Jogar novamente</button>`;
- } else {
-  c.op.forEach(o=>{
-   html+=`<button onclick="escolha('${o.p}',${o.r||0},${o.o||0})">${o.t}</button>`;
-  });
- }
+    if escolha == "1":
+        player.estrategia += 2
+        print("📚 Você aprendeu algo novo.")
+    else:
+        player.moral -= 1{
+  "eventos": [
+    {
+      "nome": "tribo",
+      "descricao": "Uma tribo aparece"
+    }
+  ]
+}# 🏛️ Roma Ascendente
 
- document.getElementById("opcoes").innerHTML=html;
- atualizar();
-}
+Um RPG de texto onde você constrói Roma desde uma pequena aldeia.
 
-function escolha(prox, r, o){
- rec+=r;
- ord+=o;
- load(prox);
-}
+## 🎮 Features
+- Sistema de escolhas
+- Combate simples
+- Gestão de recursos
+- Eventos aleatórios
 
-function atualizar(){
- document.getElementById("rec").innerText=rec;
- document.getElementById("ord").innerText=ord;
-}
-</script>
+## 🚀 Como rodar
 
-</body>
-</html>
+```bash
+python main.py
